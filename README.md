@@ -138,3 +138,77 @@ $$
 O(m \cdot n)
 $$
 
+## Algoritmo 3 - Uso de contadores y mapas
+
+En esta versión, el objetivo es **evitar comparar componentes completas** o pares de nodos en cada paso. Para ello, se mantiene información sobre las relaciones entre las componentes de **fibra óptica** y **coaxial** de forma incremental, usando estructuras auxiliares.
+
+### Idea principal
+
+Adicionalmente a los **UF**, se mantienen dos mapas que relacionan los componentes de ambos grafos:
+
+* `ff2c`: asocia cada componente de **fibra** con los componentes de **coaxial** que contiene.
+* `cf2f`: asocia cada componente de **coaxial** con los componentes de **fibra** que contiene.
+
+Decimos entonces que `ff2c[i]` son todos los conjuntos de **UF** *coaxial* que estan unidos al conjunto $i$ del **UF** de fibra.  `cf2f[j]` es lo puesto, son todos los conjuntos de **UF** *fibra* que estan unidos al conjunto $j$ del **UF** *coaxial* .
+
+Lo anterior implica que 
+
+$$
+r \in \texttt{ff2c}[i] \iff i \in \texttt{cf2f}[r]
+$$
+
+Notese que $r$ e $i$ son raices para la red coaxial y de fibra respectivamente.
+
+Ademas se tienen `froots` y `croots` que son la cantidad de raices en cada **UF**, en otras palabras, la cantidad de conjuntos en cada grafo.
+
+Notese que `froots` y `croots` nunca pueden ser mayor a $n$. Hacer un `union` entre dos conjuntos que no estaban previamente conectados, disminuye la cantidad de conjuntos en la red correspondiente.
+
+Finalmente se encuentra `pairs`, el cual representa la cantidad de **pares únicos** `(fibra_root, coaxial_root)` donde existe al menos un nodo que pertenece a ambos componentes.
+
+Decimos que existe un `pair` entre una raíz de fibra `i` y una raíz coaxial `c` si `c ∈ ff2c[i]` (o equivalentemente `i ∈ cf2f[c]`).
+
+La clave es que al realizar un `union` entre dos componentes de fibra, si una misma raíz coaxial `c` estaba presente en ambos componentes antes de la unión, entonces dos `pairs` distintos `(A,c)` y `(B,c)` se consolidan en un solo `pair` `(A∪B,c)`, reduciendo el conteo total.
+
+### Funcionamiento general
+
+1. **Inicialización**: cada nodo inicia en su propio conjunto, tanto en `dsu_fibra` como en `dsu_coaxial`. Por lo tanto, inicialmente hay `n` componentes en cada grafo, y cada componente de un tipo se asocia uno a uno con una del otro tipo.
+
+Como cada nodo esta aislado, `froots=croots=pairs=n`.
+
+2. **Procesamiento de conexiones**: por cada nueva conexión `(u, v, k)`:
+
+   * Se determinan las raíces actuales de los nodos involucrados en el DSU correspondiente.
+   * Si pertenecen a diferentes componentes, se realiza la unión y se actualizan las estructuras auxiliares `ff2c` y `cf2f`:
+
+     * Se calcula la **intersección** entre los conjuntos relacionados para reducir los pares redundantes.
+     * Se fusionan los conjuntos correspondientes, manteniendo la consistencia entre las dos estructuras.
+
+3. **Verificación de redundancia**: después de cada conexión, la red se considera redundante si se cumple que:
+   $$
+   \text{pares} = \text{componentes}_\text{fibra} = \text{componentes}_\text{coaxial}
+   $$
+   En ese caso se imprime `1`, y `0` en caso contrario.
+
+### Complejidad
+
+* Cada operación `find` o `union` en los DSU tiene costo amortizado $O(\alpha(n))$
+* Las operaciones con los mapas `ff2c` y `cf2f` realizan:
+    * Intersección de conjuntos: $O(\min(|A|, |B|))$
+    * Transferencia de elementos: $O(\min(|A|, |B|))$
+
+La clave es que siempre trabajamos con el conjunto más pequeño. En el peor caso, una operación individual podría costar $O(k), \quad k \le n/2 $, pero gracias a la **unión por tamaño**, cada vez que movemos un conjunto, su tamaño se duplica como mínimo. Esto garantiza que cada elemento se mueve como máximo $O(\log n)$ veces durante todas las operaciones.
+
+Por lo tanto, el **costo amortizado por operación** es $O(\log n)$.
+
+Como realizamos $m$ operaciones, la complejidad temporal amortizada total es:
+
+$$
+O(m \log n)
+$$
+
+Respecto a la complejidad espacial:
+* Los dos estructuras **DSU** requieren $O(n)$
+* Los mapas $\texttt{ff2c}$ y $\texttt{cf2f}$ pueden almacenar hasta $O(n^2)$ elementos en el peor caso, ya que cada uno de los $n$ conjuntos podría contener $O(n)$ elementos.
+
+La complejidad espacial total es $$O(n^2)$$
+
