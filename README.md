@@ -51,7 +51,7 @@ $$
 O(\alpha(n))
 $$
 
-donde $\alpha$ es la función inversa de Ackermann, que crece tan lentamente que puede considerarse **constante** para los tamaños del problema propuesto.
+donde $\alpha$ es la función inversa de Ackermann, que crece tan lentamente que puede considerarse **constante** para los tamaños del problema propuesto [1].
 
 ---
 
@@ -180,7 +180,7 @@ Como cada nodo esta aislado, `froots=croots=pairs=n`.
    * Se determinan las raíces actuales de los nodos involucrados en el DSU correspondiente.
    * Si pertenecen a diferentes componentes, se realiza la unión y se actualizan las estructuras auxiliares `ff2c` y `cf2f`:
 
-     * Se calcula la **intersección** entre los conjuntos relacionados para reducir los pares redundantes.
+     * Se calcula la **intersección** entre los conjuntos relacionados para reducir los `pairs` redundantes.
      * Se fusionan los conjuntos correspondientes, manteniendo la consistencia entre las dos estructuras.
 
 3. **Verificación de redundancia**: después de cada conexión, la red se considera redundante si se cumple que:
@@ -193,7 +193,7 @@ Como cada nodo esta aislado, `froots=croots=pairs=n`.
 
 * Cada operación `find` o `union` en los DSU tiene costo amortizado $O(\alpha(n))$
 * Las operaciones con los mapas `ff2c` y `cf2f` realizan:
-    * Intersección de conjuntos: $O(\min(|A|, |B|))$
+    * Intersección de conjuntos: $O(\min(|A|, |B|))$ (Encontrar **un** elemento de $A$ en $B$ toma $O(1)$ por usar hash)
     * Transferencia de elementos: $O(\min(|A|, |B|))$
 
 La clave es que siempre trabajamos con el conjunto más pequeño. En el peor caso, una operación individual podría costar $O(k), \quad k \le n/2 $, pero gracias a la **unión por tamaño**, cada vez que movemos un conjunto, su tamaño se duplica como mínimo. Esto garantiza que cada elemento se mueve como máximo $O(\log n)$ veces durante todas las operaciones.
@@ -211,4 +211,9 @@ Respecto a la complejidad espacial:
 * Los mapas $\texttt{ff2c}$ y $\texttt{cf2f}$ pueden almacenar hasta $O(n^2)$ elementos en el peor caso, ya que cada uno de los $n$ conjuntos podría contener $O(n)$ elementos.
 
 La complejidad espacial total es $$O(n^2)$$
+
+## Referencias
+
+[1] GeeksforGeeks, “Introduction to Disjoint Set Data Structure (Union-Find Algorithm),” *GeeksforGeeks*, Jul. 24, 2025. [Online]. Available: https://www.geeksforgeeks.org/dsa/introduction-to-disjoint-set-data-structure-or-union-find-algorithm/
+
 
